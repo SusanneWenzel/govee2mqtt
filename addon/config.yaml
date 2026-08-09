@@ -1,6 +1,6 @@
 name: Govee to MQTT Bridge - H6159 Patch
 # image: ghcr.io/wez/govee2mqtt-{arch}
-image: ghcr.io/susannewenzel/govee2mqtt
+# image: ghcr.io/susannewenzel/govee2mqtt
 # version: "2026.03.25-ab9deb66"
 version: "latest"
 slug: govee2mqtt
