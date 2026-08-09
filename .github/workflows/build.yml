@@ -206,8 +206,8 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Test Build Home Assistant Add On
-        # uses: home-assistant/builder@2026.02.1
-        uses: home-assistant/builder@2026.06.0
+        uses: home-assistant/builder@2026.02.1
+        # uses: home-assistant/builder@2026.06.0
         with:
           args: |
             --test \
