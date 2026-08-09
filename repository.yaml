@@ -1,3 +1,6 @@
-name: Govee to MQTT Bridge
-url: https://github.com/wez/govee2mqtt
-maintainer: Wez Furlong <govee2mqtt@wez.wezfurlong.org>
+# name: Govee to MQTT Bridge
+name: Govee to MQTT Bridge - H6159 Patch
+# url: https://github.com/wez/govee2mqtt
+url: https://github.com/SusanneWenzel/govee2mqtt
+# maintainer: Wez Furlong <govee2mqtt@wez.wezfurlong.org>
+maintainer: SusanneWenzel
