@@ -5,7 +5,8 @@ image: ghcr.io/susannewenzel/govee2mqtt
 version: "latest"
 slug: govee2mqtt
 description: Control Govee Devices
-url: https://github.com/wez/govee2mqtt
+# url: https://github.com/wez/govee2mqtt
+url: https://github.com/SusanneWenzel/govee2mqtt
 arch:
   - amd64
   - aarch64
