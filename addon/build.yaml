@@ -1,7 +1,8 @@
 labels:
   org.opencontainers.image.title: "Home Assistant Add-on: Govee to MQTT Bridge"
   org.opencontainers.image.description: "Acts as a bridge between Govee devices and Home Assistant, via the Home Assistant MQTT Integration."
-  org.opencontainers.image.source: "https://github.com/wez/govee2mqtt"
+  # org.opencontainers.image.source: "https://github.com/wez/govee2mqtt"
+  org.opencontainers.image.source: "https://github.com/SusanneWenzel/govee2mqtt"
   org.opencontainers.image.licenses: "MIT"
 
 # We need to specify these explicitly otherwise :latest will be
