@@ -14,6 +14,7 @@ use tokio::time::timeout;
 #[derive(Clone)]
 pub struct IotClient {
     client: mosquitto_rs::Client,
+    account_topic: String,
 }
 
 impl IotClient {
@@ -80,6 +81,7 @@ impl IotClient {
                         "cmdVersion": 0,
                         "transaction": format!("v_{}000", ms_timestamp()),
                         "type": 1,
+                        "accountTopic": self.account_topic,
                     }
                 }))?,
                 QoS::AtMostOnce,
@@ -324,6 +326,7 @@ pub async fn start_iot_client(
     state
         .set_iot_client(IotClient {
             client: client.clone(),
+            account_topic: (*acct.topic).clone(),
         })
         .await;
 
