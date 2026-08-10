@@ -149,6 +149,13 @@ async fn enumerate_devices_via_undo_api(
     for entry in info.devices {
         let mut device = state.device_mut(&entry.sku, &entry.device).await;
         let room_name = group_by_id.get(&entry.group_id).map(|name| name.as_str());
+        log::info!(
+            "Device {} ({}): hardware={}, firmware={}",
+            entry.device_name,
+            entry.sku,
+            entry.version_hard,
+            entry.version_soft
+        );
         device.set_undoc_device_info(entry, room_name);
     }
 
