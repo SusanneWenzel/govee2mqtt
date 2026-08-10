@@ -60,6 +60,13 @@ impl IotClient {
             _ => pwr(on, 1, 0),
         };
 
+        log::info!(
+            "IoT DEBUG outgoing power: device={} sku={} topic={} payload={}",
+            device.device_name,
+            device.sku,
+            device.device_topic(),
+            serde_json::to_string(&message)?
+        );
         self.client
             .publish(
                 device_topic,
@@ -85,6 +92,14 @@ impl IotClient {
     pub async fn set_brightness(&self, device: &DeviceEntry, percent: u8) -> anyhow::Result<()> {
         log::trace!("set_brightness for {} to {percent}", device.device);
         let device_topic = device.device_topic()?;
+        
+        log::info!(
+            "IoT DEBUG outgoing brightness: device={} sku={} topic={} payload={}",
+            device.device_name,
+            device.sku,
+            device.device_topic(),
+            serde_json::to_string(&message)?
+        );
         self.client
             .publish(
                 device_topic,
@@ -114,7 +129,14 @@ impl IotClient {
     ) -> anyhow::Result<()> {
         log::trace!("set_color_temperature for {} to {kelvin}", device.device);
         let device_topic = device.device_topic()?;
-
+        
+        log::info!(
+            "IoT DEBUG outgoing color temperature: device={} sku={} topic={} payload={}",
+            device.device_name,
+            device.sku,
+            device.device_topic(),
+            serde_json::to_string(&message)?
+        );
         self.client
             .publish(
                 device_topic,
@@ -152,6 +174,13 @@ impl IotClient {
         log::trace!("set_color_rgb for {} to {r},{g},{b}", device.device);
         let device_topic = device.device_topic()?;
 
+        log::info!(
+            "IoT DEBUG outgoing RGB: device={} sku={} topic={} payload={}",
+            device.device_name,
+            device.sku,
+            device.device_topic(),
+            serde_json::to_string(&message)?
+        );
         self.client
             .publish(
                 device_topic,
@@ -380,8 +409,9 @@ async fn run_iot_subscriber(
         match event {
             Event::Message(msg) => {
                 let payload = String::from_utf8_lossy(&msg.payload);
-                log::trace!("{} -> {payload}", msg.topic);
-
+                // log::trace!("{} -> {payload}", msg.topic);
+                log::info!("IoT DEBUG incoming: {} -> {payload}", msg.topic);
+                
                 match from_json::<Packet, _>(&msg.payload) {
                     Ok(packet) => {
                         log::debug!("{packet:?}");
@@ -481,7 +511,7 @@ async fn run_iot_subscriber(
             }
             Event::Connected(status) => {
                 log::info!("IoT (re)connected with status {status}");
-
+                log::info!("IoT DEBUG account subscription topic: {}", acct.topic);
                 client
                     .subscribe(&acct.topic, mosquitto_rs::QoS::AtMostOnce)
                     .await
