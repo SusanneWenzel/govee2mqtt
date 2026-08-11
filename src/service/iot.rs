@@ -306,7 +306,10 @@ impl IotClient {
                         "data": {
                             "command": commands,
                         },
-                        "cmdVersion": 0,
+                        // Govee-generated ptReal commands use command version 1.
+                        // Legacy proType=0 H615A devices ignore the otherwise
+                        // correctly formed AA 05 packets when sent as version 0.
+                        "cmdVersion": 1,
                         "transaction": format!("v_{}000", ms_timestamp()),
                         "type": 1,
                         "accountTopic": self.account_topic,
