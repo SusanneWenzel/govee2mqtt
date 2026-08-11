@@ -190,11 +190,6 @@ fn load_quirks() -> HashMap<String, Quirk> {
         // device
         // <https://github.com/wez/govee2mqtt/issues/15>
         Quirk::light("H6141", STRIP).with_broken_platform(),
-        // At the time of writing, the metadata
-        // returned by Govee is completely bogus for this
-        // device
-        // <https://github.com/wez/govee2mqtt/issues/14#issuecomment-1880050091>
-        Quirk::light("H6159", STRIP).with_broken_platform(),
         // <https://github.com/wez/govee2mqtt/issues/152>
         Quirk::light("H6003", BULB).with_broken_platform(),
         // <https://github.com/wez/govee2mqtt/issues/40#issuecomment-1889726710>
@@ -304,7 +299,8 @@ fn load_quirks() -> HashMap<String, Quirk> {
         Quirk::lan_api_capable_light("H610A", STRIP),
         Quirk::lan_api_capable_light("H610B", STRIP),
         Quirk::lan_api_capable_light("H6117", STRIP),
-        // Quirk::lan_api_capable_light("H6159", STRIP),
+        // H6159 devices can advertise LAN capability without responding to LAN
+        // probing. Disable IoT so that control falls back to the Platform API.
         Quirk::lan_api_capable_light("H6159", STRIP).with_iot_api_support(false),
         Quirk::lan_api_capable_light("H615E", STRIP),
         Quirk::lan_api_capable_light("H6163", STRIP),
