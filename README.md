@@ -42,6 +42,8 @@ This branch includes two compatibility adjustments for older Govee LED strips:
   device API. Hardware **1.00.02** is exposed as power + brightness only because RGB and colour
   temperature commands were confirmed not to work reliably through the available Platform/IoT
   control paths. Hardware **2.01.01** keeps the normal full H615A light capabilities.
+* **H6054 (HW 3.02.01):** This hardware version does not expose LAN Control. IoT API support 
+  is disabled so that commands use the Platform API instead.  
 
 Startup logging retains the device name, SKU, hardware version and firmware version to make the
 selected hardware-specific behaviour visible.
