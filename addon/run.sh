@@ -26,7 +26,7 @@ wait_for_mqtt() {
   bashio::log.error "MQTT broker did not become available after ${max_attempts} attempts"
   return 1
 }
-bashio::log.warning "H6159 PATCH run.sh is running"
+bashio::log.warning "NO LAN CONTROL PATCH run.sh is running"
 if bashio::config.has_value mqtt_host ; then
   export GOVEE_MQTT_HOST="$(bashio::config mqtt_host)"
 else
