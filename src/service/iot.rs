@@ -541,7 +541,7 @@ async fn run_iot_subscriber(
                                     .with_context(|| {
                                         format!("subscribe to device topic {topic}")
                                     })?;
-                            }
+                            } 
                         }
                     }
                 }
