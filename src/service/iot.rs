@@ -17,6 +17,50 @@ pub struct IotClient {
     account_topic: String,
 }
 
+fn uses_legacy_light_ptreal(device: &DeviceEntry) -> bool {
+    device.sku == "H615A" && device.version_hard == "1.00.02"
+}
+
+fn legacy_light_rgb_packet(r: u8, g: u8, b: u8) -> Base64HexBytes {
+    Base64HexBytes::with_bytes(vec![0xaa, 0x05, 0x02, r, g, b])
+}
+
+fn kelvin_to_rgb(kelvin: u32) -> (u8, u8, u8) {
+    // Govee's legacy light protocol represents colour temperature as an RGB
+    // triplet inside an AA 05 02 ... packet. This approximation is only used
+    // for that legacy protocol path; the Kelvin value is clamped to the range
+    // exposed by the affected H615A generation.
+    let temperature = kelvin.clamp(2000, 9000) as f64 / 100.0;
+
+    let red = if temperature <= 66.0 {
+        255.0
+    } else {
+        329.698_727_446 * (temperature - 60.0).powf(-0.133_204_759_2)
+    };
+
+    let green = if temperature <= 66.0 {
+        99.470_802_586_1 * temperature.ln() - 161.119_568_166_1
+    } else {
+        288.122_169_528_3 * (temperature - 60.0).powf(-0.075_514_849_2)
+    };
+
+    let blue = if temperature >= 66.0 {
+        255.0
+    } else if temperature <= 19.0 {
+        0.0
+    } else {
+        138.517_731_223_1 * (temperature - 10.0).ln() - 305.044_792_730_7
+    };
+
+    let clamp = |value: f64| value.round().clamp(0.0, 255.0) as u8;
+    (clamp(red), clamp(green), clamp(blue))
+}
+
+fn legacy_light_color_temperature_packet(kelvin: u32) -> Base64HexBytes {
+    let (r, g, b) = kelvin_to_rgb(kelvin);
+    Base64HexBytes::with_bytes(vec![0xaa, 0x05, 0x02, 0xff, 0xff, 0xff, 0x01, r, g, b])
+}
+
 impl IotClient {
     pub fn is_device_compatible(&self, device: &DeviceEntry) -> bool {
         device.device_ext.device_settings.topic.is_some()
@@ -61,6 +105,14 @@ impl IotClient {
             _ => pwr(on, 1, 0),
         };
 
+        log::info!(
+            "IoT DEBUG outgoing power: device={} sku={} topic={} power_state={}",
+            device.device_name,
+            device.sku,
+            device_topic,
+            power_state
+        );
+
         self.client
             .publish(
                 device_topic,
@@ -87,6 +139,13 @@ impl IotClient {
     pub async fn set_brightness(&self, device: &DeviceEntry, percent: u8) -> anyhow::Result<()> {
         log::trace!("set_brightness for {} to {percent}", device.device);
         let device_topic = device.device_topic()?;
+        log::info!(
+            "IoT DEBUG outgoing brightness: device={} sku={} topic={} percent={}",
+            device.device_name,
+            device.sku,
+            device_topic,
+            percent
+        );
         self.client
             .publish(
                 device_topic,
@@ -117,6 +176,27 @@ impl IotClient {
     ) -> anyhow::Result<()> {
         log::trace!("set_color_temperature for {} to {kelvin}", device.device);
         let device_topic = device.device_topic()?;
+
+        log::info!(
+            "IoT DEBUG outgoing color temperature: device={} sku={} topic={} kelvin={}",
+            device.device_name,
+            device.sku,
+            device_topic,
+            kelvin
+        );
+
+        if uses_legacy_light_ptreal(device) {
+            let command = legacy_light_color_temperature_packet(kelvin);
+            log::info!(
+                "IoT DEBUG legacy ptReal color temperature: device={} sku={} hardware={} kelvin={} command={:?}",
+                device.device_name,
+                device.sku,
+                device.version_hard,
+                kelvin,
+                command.base64()
+            );
+            return self.send_real(device, command.base64()).await;
+        }
 
         self.client
             .publish(
@@ -155,6 +235,31 @@ impl IotClient {
     ) -> anyhow::Result<()> {
         log::trace!("set_color_rgb for {} to {r},{g},{b}", device.device);
         let device_topic = device.device_topic()?;
+
+        log::info!(
+            "IoT DEBUG outgoing RGB: device={} sku={} topic={} rgb={},{},{}",
+            device.device_name,
+            device.sku,
+            device_topic,
+            r,
+            g,
+            b
+        );
+
+        if uses_legacy_light_ptreal(device) {
+            let command = legacy_light_rgb_packet(r, g, b);
+            log::info!(
+                "IoT DEBUG legacy ptReal RGB: device={} sku={} hardware={} rgb={},{},{} command={:?}",
+                device.device_name,
+                device.sku,
+                device.version_hard,
+                r,
+                g,
+                b,
+                command.base64()
+            );
+            return self.send_real(device, command.base64()).await;
+        }
 
         self.client
             .publish(
@@ -201,9 +306,13 @@ impl IotClient {
                         "data": {
                             "command": commands,
                         },
-                        "cmdVersion": 0,
+                        // Govee-generated ptReal commands use command version 1.
+                        // Legacy proType=0 H615A devices ignore the otherwise
+                        // correctly formed AA 05 packets when sent as version 0.
+                        "cmdVersion": 1,
                         "transaction": format!("v_{}000", ms_timestamp()),
                         "type": 1,
+                        "accountTopic": self.account_topic,
                     }
                 }))?,
                 QoS::AtMostOnce,
@@ -386,7 +495,8 @@ async fn run_iot_subscriber(
         match event {
             Event::Message(msg) => {
                 let payload = String::from_utf8_lossy(&msg.payload);
-                log::trace!("{} -> {payload}", msg.topic);
+                // log::trace!("{} -> {payload}", msg.topic);
+                log::info!("IoT DEBUG incoming: {} -> {payload}", msg.topic);
 
                 match from_json::<Packet, _>(&msg.payload) {
                     Ok(packet) => {
@@ -488,6 +598,7 @@ async fn run_iot_subscriber(
             Event::Connected(status) => {
                 log::info!("IoT (re)connected with status {status}");
 
+                log::info!("IoT DEBUG account subscription topic: {:?}", acct.topic);
                 client
                     .subscribe(&acct.topic, mosquitto_rs::QoS::AtMostOnce)
                     .await
