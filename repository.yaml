@@ -1,5 +1,5 @@
 # name: Govee to MQTT Bridge
-name: Govee to MQTT Bridge - H6159 Patch
+name: Govee to MQTT Bridge - No LAN Control Patch
 # url: https://github.com/wez/govee2mqtt
 url: https://github.com/SusanneWenzel/govee2mqtt
 # maintainer: Wez Furlong <govee2mqtt@wez.wezfurlong.org>
