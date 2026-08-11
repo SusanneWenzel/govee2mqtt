@@ -114,6 +114,7 @@ impl IotClient {
                         "cmdVersion": 0,
                         "transaction": format!("v_{}000", ms_timestamp()),
                         "type": 1,
+                        "accountTopic": self.account_topic,
                     }
                 }))?,
                 QoS::AtMostOnce,
@@ -157,6 +158,7 @@ impl IotClient {
                         "cmdVersion": 0,
                         "transaction": format!("v_{}000", ms_timestamp()),
                         "type": 1,
+                        "accountTopic": self.account_topic,
                     }
                 }))?,
                 QoS::AtMostOnce,
@@ -204,6 +206,7 @@ impl IotClient {
                         "cmdVersion": 0,
                         "transaction": format!("v_{}000", ms_timestamp()),
                         "type": 1,
+                        "accountTopic": self.account_topic,
                     }
                 }))?,
                 QoS::AtMostOnce,
