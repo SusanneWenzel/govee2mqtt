@@ -83,7 +83,13 @@ impl EntityInstance for DeviceLight {
                 let is_on = device_state.light_on.unwrap_or(false);
 
                 let light_state = if is_on {
-                    if device_state.kelvin == 0 {
+                    if self.light.supported_color_modes == ["brightness"] {
+                        json!({
+                            "state": "ON",
+                            "color_mode": "brightness",
+                            "brightness": device_state.brightness,
+                        })
+                    } else if device_state.kelvin == 0 {
                         json!({
                             "state": "ON",
                             "color_mode": "rgb",
@@ -158,7 +164,19 @@ impl DeviceLight {
             seg = segment.map(|n| format!("-{n}")).unwrap_or_default()
         );
 
-        let effect_list = if segment.is_some() {
+        // Older H615A hardware accepts power and brightness reliably, but its
+        // RGB, color-temperature and effect controls are not reliable. Keep
+        // the device itself classified as a light and restrict only the Home
+        // Assistant MQTT discovery capabilities for this hardware revision.
+        let brightness_only = segment.is_none()
+            && device.sku == "H615A"
+            && device
+                .undoc_device_info
+                .as_ref()
+                .map(|info| info.entry.version_hard.as_str())
+                == Some("1.00.02");
+
+        let effect_list = if segment.is_some() || brightness_only {
             vec![]
         } else {
             match state.device_list_scenes(device).await {
@@ -172,11 +190,13 @@ impl DeviceLight {
 
         let mut supported_color_modes = vec![];
 
-        if segment.is_some() || device.supports_rgb() {
+        if brightness_only {
+            supported_color_modes.push("brightness".to_string());
+        } else if segment.is_some() || device.supports_rgb() {
             supported_color_modes.push("rgb".to_string());
         }
 
-        let (min_mireds, max_mireds) = if segment.is_some() {
+        let (min_mireds, max_mireds) = if segment.is_some() || brightness_only {
             (None, None)
         } else if let Some((min, max)) = device.get_color_temperature_range() {
             supported_color_modes.push("color_temp".to_string());
@@ -222,7 +242,7 @@ impl DeviceLight {
                 supported_color_modes,
                 brightness,
                 brightness_scale: 100,
-                effect: true,
+                effect: !brightness_only,
                 effect_list,
                 payload_available: "online".to_string(),
                 max_mireds,
