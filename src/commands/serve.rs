@@ -140,7 +140,7 @@ async fn enumerate_devices_via_undo_api(
     };
 
     log::info!("Querying undocumented API for device + room list");
-
+    
     let acct = client.login_account_cached().await?;
     let info = client.get_device_list(&acct.token).await?;
     let mut group_by_id = HashMap::new();
@@ -158,6 +158,21 @@ async fn enumerate_devices_via_undo_api(
             entry.version_soft
         );
 
+        match entry.device_topic() {
+            Ok(topic) => log::info!(
+                "Device {} ({}): IoT device topic={}",
+                entry.device_name,
+                entry.sku,
+                topic
+            ),
+            Err(err) => log::info!(
+                "Device {} ({}): no IoT device topic: {}",
+                entry.device_name,
+                entry.sku,
+                err
+            ),
+        };
+        
         device.set_undoc_device_info(entry, room_name);
     }
 
