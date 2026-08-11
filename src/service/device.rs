@@ -469,20 +469,7 @@ impl Device {
 
     pub fn resolve_quirk(&self) -> Option<Quirk> {
         match resolve_quirk(&self.sku) {
-            Some(q) => {
-                let mut q = q.clone();
-                if self.sku == "H615A"
-                    && self
-                        .undoc_device_info
-                        .as_ref()
-                        .map(|info| info.entry.version_hard.as_str())
-                        == Some("1.00.02")
-                {
-                    q.supports_rgb = false;
-                    q.color_temp_range = None;
-                }
-                Some(q)
-            }
+            Some(q) => Some(q.clone()),
             None => {
                 // It's an unknown device, but since it showed up via LAN disco,
                 // we can assume that it is a light
