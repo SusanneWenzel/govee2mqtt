@@ -195,6 +195,8 @@ fn load_quirks() -> HashMap<String, Quirk> {
         // device
         // <https://github.com/wez/govee2mqtt/issues/14#issuecomment-1880050091>
         Quirk::light("H6159", STRIP).with_broken_platform(),
+        // H6054 HW 3.02.01 has no LAN Control; disable IoT to use Platform API.
+        Quirk::light("H6054", DESK).with_iot_api_support(false),
         // <https://github.com/wez/govee2mqtt/issues/152>
         Quirk::light("H6003", BULB).with_broken_platform(),
         // <https://github.com/wez/govee2mqtt/issues/40#issuecomment-1889726710>
