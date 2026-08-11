@@ -32,6 +32,20 @@ via the [Home Assistant MQTT Integration](https://www.home-assistant.io/integrat
 * `LAN` means that you have enabled the [Govee LAN API](https://app-h5.govee.com/user-manual/wlan-guide)
   on supported devices and that the LAN API protocol is functional on your network
 
+## Local compatibility patch
+
+This branch includes two compatibility adjustments for older Govee LED strips:
+
+* **H6159:** IoT control is disabled for this SKU while LAN capability remains enabled.
+  Devices that do not answer LAN probing can therefore fall back to the working Platform API.
+* **H615A:** capabilities are selected using the hardware version reported by the undocumented
+  device API. Hardware **1.00.02** is exposed as power + brightness only because RGB and colour
+  temperature commands were confirmed not to work reliably through the available Platform/IoT
+  control paths. Hardware **2.01.01** keeps the normal full H615A light capabilities.
+
+Startup logging retains the device name, SKU, hardware version and firmware version to make the
+selected hardware-specific behaviour visible.
+
 ## Usage
 
 * [Installing the HASS Add-On](docs/ADDON.md) - for HAOS and Supervised HASS users
