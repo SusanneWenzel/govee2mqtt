@@ -169,12 +169,20 @@ impl DeviceLight {
         // the device itself classified as a light and restrict only the Home
         // Assistant MQTT discovery capabilities for this hardware revision.
         let brightness_only = segment.is_none()
-            && device.sku == "H615A"
-            && device
-                .undoc_device_info
-                .as_ref()
-                .map(|info| info.entry.version_hard.as_str())
-                == Some("1.00.02");
+            && (
+                (device.sku == "H615A"
+                    && device
+                        .undoc_device_info
+                        .as_ref()
+                        .map(|info| info.entry.version_hard.as_str())
+                        == Some("1.00.02"))
+                || (device.sku == "H6054"
+                    && device
+                        .undoc_device_info
+                        .as_ref()
+                        .map(|info| info.entry.version_hard.as_str())
+                        == Some("3.02.01"))
+            );
 
         let effect_list = if segment.is_some() || brightness_only {
             vec![]
