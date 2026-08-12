@@ -182,6 +182,12 @@ impl DeviceLight {
                         .as_ref()
                         .map(|info| info.entry.version_hard.as_str())
                         == Some("3.02.01"))
+                || (device.sku == "H6182"
+                    && device
+                        .undoc_device_info
+                        .as_ref()
+                        .map(|info| info.entry.version_hard.as_str())
+                        == Some("1.00.01"))
             );
 
         let effect_list = if segment.is_some() || brightness_only {
