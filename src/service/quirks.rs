@@ -308,6 +308,7 @@ fn load_quirks() -> HashMap<String, Quirk> {
         Quirk::lan_api_capable_light("H6117", STRIP),
         // Quirk::lan_api_capable_light("H6159", STRIP),
         Quirk::lan_api_capable_light("H6159", STRIP).with_iot_api_support(false),
+        Quirk::lan_api_capable_light("H6182", STRIP).with_iot_api_support(false),
         Quirk::lan_api_capable_light("H615E", STRIP),
         Quirk::lan_api_capable_light("H6163", STRIP),
         Quirk::lan_api_capable_light("H6168", TV_BACK),
